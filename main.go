@@ -16,16 +16,17 @@ const waitBetweenDownloads = 30 * time.Minute
 const waitVariance = 1 * time.Minute
 
 func main() {
-	libhoney.Init(libhoney.Config{
+	err := libhoney.Init(libhoney.Config{
 		WriteKey: os.Getenv("HONEYCOMB_API_KEY"),
-		Dataset:  "Mammoth Lakes Internet",
+		Dataset:  "Mammoth Lakes Internet 3",
 	})
+	fmt.Println("Err", err)
 	defer libhoney.Close()
 
 	go pingTest()
 
 	for {
-		downloadSpeedTest()
+		// downloadSpeedTest()
 		secs := time.Duration(waitVariance.Seconds()*rand.Float64()) * time.Second
 		time.Sleep(waitBetweenDownloads + secs)
 	}
@@ -56,7 +57,7 @@ func downloadSpeedTest() {
 			event.Add(map[string]interface{}{
 				"speed_kbps": Kbps,
 			})
-			event.Send()
+			// event.Send()
 			fmt.Printf("%.2f Kbps %.2f Mbps\n", Kbps, Kbps/1000)
 		}
 
@@ -87,12 +88,12 @@ func pingTest() {
 	pinger.OnRecv = func(pkt *ping.Packet) {
 		event := libhoney.NewEvent()
 		event.Add(map[string]interface{}{
-			"latency_ms": pkt.Rtt.Milliseconds,
+			"latency_ms": pkt.Rtt.Milliseconds(),
 		})
-		event.Send()
+		err := event.Send()
 
-		fmt.Printf("%d bytes from %s: icmp_seq=%d time=%v\n",
-			pkt.Nbytes, pkt.IPAddr, pkt.Seq, pkt.Rtt)
+		fmt.Printf("%d bytes from %s: icmp_seq=%d time=%v err=%v\n",
+			pkt.Nbytes, pkt.IPAddr, pkt.Seq, pkt.Rtt, err)
 	}
 
 	pinger.OnFinish = func(stats *ping.Statistics) {
