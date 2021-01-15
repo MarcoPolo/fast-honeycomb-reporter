@@ -1,7 +1,7 @@
 { pkgs ? import <nixpkgs> { } }:
 pkgs.buildGoModule rec {
   pname = "fast-honeycomb-reporter";
-  version = "0.0.2";
+  version = "0.0.3";
 
   src = ./.;
   vendorSha256 = "sha256:P3Iyb0dXBIXTHT50I1FdQx5V8Zg/jznyX7q4SPoMCH8=";
