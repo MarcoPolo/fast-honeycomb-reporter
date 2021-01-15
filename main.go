@@ -18,15 +18,19 @@ const waitVariance = 1 * time.Minute
 func main() {
 	err := libhoney.Init(libhoney.Config{
 		WriteKey: os.Getenv("HONEYCOMB_API_KEY"),
-		Dataset:  "Mammoth Lakes Internet 3",
+		Dataset:  "Mammoth Lakes Internet",
 	})
 	fmt.Println("Err", err)
 	defer libhoney.Close()
 
-	go pingTest()
+	go func() {
+		for {
+			pingTest()
+		}
+	}()
 
 	for {
-		// downloadSpeedTest()
+		downloadSpeedTest()
 		secs := time.Duration(waitVariance.Seconds()*rand.Float64()) * time.Second
 		time.Sleep(waitBetweenDownloads + secs)
 	}
