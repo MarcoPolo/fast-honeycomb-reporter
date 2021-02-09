@@ -6,39 +6,44 @@
 
   outputs = { self, nixpkgs, flake-utils }:
     flake-utils.lib.eachDefaultSystem
-      (system:
-        let pkgs = nixpkgs.legacyPackages.${system};
-        in
-        {
-          defaultPackage = import ./fast-honeycomb-reporter.nix { inherit pkgs; };
-        }) // {
+      (
+        system:
+          let
+            pkgs = nixpkgs.legacyPackages.${system};
+          in
+            {
+              defaultPackage = import ./fast-honeycomb-reporter.nix { inherit pkgs; };
+            }
+      ) // {
       nixosModule = { config, pkgs, ... }:
-        let cfg = config.services.fast-honeycomb-reporter;
+        let
+          cfg = config.services.fast-honeycomb-reporter;
         in
-        {
-          options.services.fast-honeycomb-reporter = {
-            apiKey = nixpkgs.lib.mkOption {
-              description = "Honeycomb API Key";
-              type = nixpkgs.lib.types.str;
+          {
+            options.services.fast-honeycomb-reporter = {
+              apiKey = nixpkgs.lib.mkOption {
+                description = "Honeycomb API Key";
+                type = nixpkgs.lib.types.str;
+              };
             };
-          };
-          config = {
-            users.users.fast-honeycomb-reporter.isSystemUser = true;
-            systemd.services.fast-honeycomb-reporter = {
-              description = "fast-honeycomb-reporter";
-              wantedBy = [ "multi-user.target" ];
-              after = [ "network.target" ];
-              serviceConfig = {
-                Environment = "HONEYCOMB_API_KEY=${cfg.apiKey}";
-                ExecStart = "${
-                      self.defaultPackage.${pkgs.system}
-                    }/bin/fast-honeycomb-reporter";
-                Restart = "on-failure";
-                User = "fast-honeycomb-reporter";
+            config = {
+              users.users.fast-honeycomb-reporter.isSystemUser = true;
+              systemd.services.fast-honeycomb-reporter = {
+                description = "fast-honeycomb-reporter";
+                wantedBy = [ "multi-user.target" ];
+                after = [ "network.target" ];
+                serviceConfig = {
+                  Environment = "HONEYCOMB_API_KEY=${cfg.apiKey}";
+                  ExecStart = "${
+                  self.defaultPackage.${pkgs.system}
+                  }/bin/fast-honeycomb-reporter";
+                  Restart = "always";
+                  RestartSec = "1min";
+                  User = "fast-honeycomb-reporter";
+                };
               };
             };
           };
-        };
 
     };
 }
