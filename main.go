@@ -61,7 +61,7 @@ func downloadSpeedTest() {
 			event.Add(map[string]interface{}{
 				"speed_kbps": Kbps,
 			})
-			// event.Send()
+			event.Send()
 			fmt.Printf("%.2f Kbps %.2f Mbps\n", Kbps, Kbps/1000)
 		}
 
